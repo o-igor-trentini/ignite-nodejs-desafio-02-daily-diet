@@ -15,6 +15,7 @@ export class ApiError extends Error {
 export const customMessages: Record<string, string> = {
   Required: 'obrigatório',
   'Expected object, received number': 'deve ser um objeto',
+  'Expected date, received string': 'deve ser uma data',
 }
 
 export const statusCodeByErrorCode: Record<Code, number> = {

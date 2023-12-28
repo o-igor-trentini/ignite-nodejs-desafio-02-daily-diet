@@ -11,8 +11,6 @@ import {
 import { getSession, makeSession } from './utils/session'
 
 export const users = async (app: FastifyInstance) => {
-  app.addHook('preHandler', logEndpointAccessed)
-
   app.post('/', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       const schema = z.object({
@@ -32,6 +30,8 @@ export const users = async (app: FastifyInstance) => {
         name,
         password,
       })
+
+      reply.status(201)
     } catch (err: unknown) {
       errorHandler(reply, err)
     }
