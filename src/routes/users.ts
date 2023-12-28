@@ -21,6 +21,12 @@ export const users = async (app: FastifyInstance) => {
       })
       const { name, password } = schema.parse(request.body)
 
+      const user = await knex('users').where({ name }).first()
+      if (user) {
+        badRequestError('Este usuário já esta cadastrado.')
+        return
+      }
+
       await knex('users').insert({
         id: crypto.randomUUID(),
         name,
@@ -54,6 +60,7 @@ export const users = async (app: FastifyInstance) => {
       session = makeSession(user.id, name, session)
 
       reply.cookie('session', JSON.stringify(session), {
+        httpOnly: true,
         path: '/',
         maxAge: 1000 * 60 * 60 * 24 * 7, // 7 dias
       })
