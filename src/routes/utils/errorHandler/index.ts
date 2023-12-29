@@ -12,12 +12,14 @@ export const errorHandler = (reply: FastifyReply, err: unknown): void => {
         message: customMessages[message] ?? message,
       })),
     })
+    return
   }
 
   if (err instanceof ApiError) {
     reply
       .status(statusCodeByErrorCode[err.code])
       .send({ code: err.code, message: err.message } as ApiError)
+    return
   }
 
   reply.status(500).send({

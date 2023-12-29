@@ -21,8 +21,8 @@ export const meals = async (app: FastifyInstance) => {
         request.body,
       )
       const date = datetime.toISOString().split('T')[0]
-      const hour = ('0' + datetime.getHours()).slice(-2)
-      const minutes = ('0' + datetime.getMinutes()).slice(-2)
+      const hour = ('0' + datetime.getUTCHours()).slice(-2)
+      const minutes = ('0' + datetime.getUTCMinutes()).slice(-2)
       const session = getSession(request)
 
       await knex('meals').insert({
@@ -46,20 +46,78 @@ export const meals = async (app: FastifyInstance) => {
 
     const meals = await knex('meals')
       .where('user_id', session?.user.id)
+      .whereNull('deleted_at')
       .select()
 
     return { meals }
   })
 
-  app.get('/:id', async (request: FastifyRequest) => {
-    const schema = z.object({ id: z.string().uuid() })
-    const { id } = schema.parse(request.params)
-    const session = getSession(request)
+  app.get('/:id', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const schema = z.object({ id: z.string().uuid() })
+      const { id } = schema.parse(request.params)
+      const session = getSession(request)
 
-    const meal = await knex('meals')
-      .where({ id, user_id: session?.user.id })
-      .first()
+      const meal = await knex('meals')
+        .where({ id, user_id: session?.user.id })
+        .whereNull('deleted_at')
+        .first()
 
-    return { meal }
+      return { meal }
+    } catch (err: unknown) {
+      errorHandler(reply, err)
+    }
+  })
+
+  app.delete('/:id', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const schema = z.object({ id: z.string().uuid() })
+      const { id } = schema.parse(request.params)
+      const session = getSession(request)
+
+      await knex('meals')
+        .where({ id, user_id: session?.user.id })
+        .whereNull('deleted_at')
+        .update({ deleted_at: knex.fn.now() })
+
+      reply.status(204)
+    } catch (err: unknown) {
+      errorHandler(reply, err)
+    }
+  })
+
+  app.put('/:id', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const paramsSchema = z.object({ id: z.string().uuid() })
+      const { id } = paramsSchema.parse(request.params)
+      const schema = z.object({
+        name: z.string(),
+        description: z.string(),
+        datetime: z.coerce.date(),
+        inTheDiet: z.boolean(),
+      })
+      const { name, description, datetime, inTheDiet } = schema.parse(
+        request.body,
+      )
+      const date = datetime.toISOString().split('T')[0]
+      const hour = ('0' + datetime.getUTCHours()).slice(-2)
+      const minutes = ('0' + datetime.getUTCMinutes()).slice(-2)
+      const session = getSession(request)
+
+      await knex('meals')
+        .where({ id, user_id: session?.user.id })
+        .whereNull('deleted_at')
+        .update({
+          name,
+          description,
+          meal_date: date,
+          meal_hour: hour + ':' + minutes,
+          in_the_diet: inTheDiet,
+        })
+
+      reply.status(204)
+    } catch (err: unknown) {
+      errorHandler(reply, err)
+    }
   })
 }

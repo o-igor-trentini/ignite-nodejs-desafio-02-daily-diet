@@ -16,6 +16,7 @@ export const customMessages: Record<string, string> = {
   Required: 'obrigatório',
   'Expected object, received number': 'deve ser um objeto',
   'Expected date, received string': 'deve ser uma data',
+  'Invalid uuid': 'uuid inválido',
 }
 
 export const statusCodeByErrorCode: Record<Code, number> = {
