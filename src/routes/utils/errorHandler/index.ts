@@ -28,6 +28,10 @@ export const errorHandler = (reply: FastifyReply, err: unknown): void => {
   })
 }
 
+export const unauthorizedError = (message: string): void => {
+  throw new ApiError(message, 'unauthorized')
+}
+
 export const badRequestError = (message: string): void => {
   throw new ApiError(message, 'bad_request')
 }

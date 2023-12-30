@@ -1,4 +1,9 @@
-export type Code = 'bad_request' | 'not_found' | 'validation' | 'unknown'
+export type Code =
+  | 'bad_request'
+  | 'unauthorized'
+  | 'not_found'
+  | 'validation'
+  | 'unknown'
 
 export class ApiError extends Error {
   constructor(mensagem: string, code: Code, errors?: []) {
@@ -21,6 +26,7 @@ export const customMessages: Record<string, string> = {
 
 export const statusCodeByErrorCode: Record<Code, number> = {
   bad_request: 400,
+  unauthorized: 401,
   not_found: 404,
   validation: 422,
   unknown: 500,

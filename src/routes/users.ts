@@ -1,5 +1,4 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
-import { logEndpointAccessed } from './middlewares/log-endpoint-accessed'
 import { z } from 'zod'
 import crypto from 'crypto'
 import { knex } from '../database'
@@ -8,7 +7,7 @@ import {
   errorHandler,
   notFoundError,
 } from './utils/errorHandler'
-import { getSession, makeSession } from './utils/session'
+import { makeSession } from './utils/session'
 
 export const users = async (app: FastifyInstance) => {
   app.post('/', async (request: FastifyRequest, reply: FastifyReply) => {
@@ -56,8 +55,7 @@ export const users = async (app: FastifyInstance) => {
         return
       }
 
-      let session = getSession(request)
-      session = makeSession(user.id, name, session)
+      const session = makeSession(user.id, name)
 
       reply.cookie('session', JSON.stringify(session), {
         httpOnly: true,

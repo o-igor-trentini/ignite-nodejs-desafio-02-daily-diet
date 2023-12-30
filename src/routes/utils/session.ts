@@ -1,5 +1,6 @@
 import crypto from 'crypto'
 import { FastifyRequest } from 'fastify'
+import { unauthorizedError } from './errorHandler'
 
 export interface Session {
   id: string
@@ -9,19 +10,13 @@ export interface Session {
   }
 }
 
-export const getSession = (request: FastifyRequest): Session | null =>
-  request.cookies?.session
-    ? JSON.parse(request.cookies.session as string)
-    : null
+export const getSession = (request: FastifyRequest): Session => {
+  if (!request.cookies?.session) unauthorizedError('Não autorizado.')
 
-export const makeSession = (
-  userId: string,
-  userName: string,
-  session: Session | null,
-): Session =>
-  !session
-    ? {
-        id: crypto.randomUUID(),
-        user: { id: userId, name: userName },
-      }
-    : session
+  return JSON.parse(request.cookies.session as string)
+}
+
+export const makeSession = (userId: string, userName: string): Session => ({
+  id: crypto.randomUUID(),
+  user: { id: userId, name: userName },
+})

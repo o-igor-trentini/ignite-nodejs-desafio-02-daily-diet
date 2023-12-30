@@ -120,4 +120,41 @@ export const meals = async (app: FastifyInstance) => {
       errorHandler(reply, err)
     }
   })
+
+  app.get('/summary', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const session = getSession(request)
+
+      const meals = await knex('meals')
+        .select('in_the_diet')
+        .where('user_id', session?.user.id)
+
+      let totalInTheDiet = 0
+      let bestSequence = 0
+      let currentSequence = 0
+      for (const meal of meals) {
+        if (!meal.in_the_diet) {
+          currentSequence = 0
+          continue
+        }
+
+        totalInTheDiet++
+        currentSequence++
+        bestSequence = Math.max(bestSequence, currentSequence)
+      }
+
+      const totalOutTheDiet = meals.length - totalInTheDiet
+
+      return {
+        summary: {
+          total: meals.length,
+          total_in_the_diet: totalInTheDiet,
+          total_out_the_diet: totalOutTheDiet,
+          diet_best_sequence: bestSequence,
+        },
+      }
+    } catch (err: unknown) {
+      errorHandler(reply, err)
+    }
+  })
 }
